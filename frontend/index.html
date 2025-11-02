@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Web App Generator</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #ffffff;
+            min-height: 100vh;
+            overflow: hidden;
+            color: #1a1a1a;
+        }
+
+        .container {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .prompt-section {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            transition: all 0.6s ease;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .prompt-section.minimized {
+            flex: 0 0 70px;
+            padding: 1rem 2rem;
+            background: #f8f8f8;
+            border-bottom: 1px solid #d0d0d0;
+        }
+
+        .prompt-wrapper {
+            max-width: 700px;
+            width: 100%;
+        }
+
+        .prompt-section.minimized .prompt-wrapper {
+            max-width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        h1 {
+            color: #1a1a1a;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            text-align: center;
+            font-weight: 300;
+            letter-spacing: -0.5px;
+        }
+
+        .prompt-section.minimized h1 {
+            font-size: 1.3rem;
+            margin-bottom: 0;
+            text-align: left;
+            font-weight: 400;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 1.1rem;
+            text-align: center;
+            margin-bottom: 3rem;
+            font-weight: 300;
+        }
+
+        .prompt-section.minimized .subtitle {
+            display: none;
+        }
+
+        .input-container {
+            position: relative;
+            width: 100%;
+        }
+
+        .prompt-section.minimized .input-container {
+            flex: 1;
+        }
+
+        .prompt-input {
+            width: 100%;
+            padding: 1.3rem 5rem 1.3rem 1.5rem;
+            font-size: 1.1rem;
+            border: 1px solid #d0d0d0;
+            border-radius: 8px;
+            background: white;
+            outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .prompt-input:focus {
+            border-color: #1a1a1a;
+            box-shadow: 0 0 0 2px rgba(26, 26, 26, 0.1);
+        }
+
+        .prompt-section.minimized .prompt-input {
+            padding: 0.7rem 4rem 0.7rem 1.2rem;
+            font-size: 1rem;
+            border-radius: 6px;
+        }
+
+        .generate-btn {
+            position: absolute;
+            right: 6px;
+            top: 50%;
+            transform: translateY(-50%);
+            padding: 0.7rem 1.8rem;
+            background: #1a1a1a;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s ease, transform 0.2s ease;
+        }
+
+        .generate-btn:hover:not(:disabled) {
+            background: #333;
+            transform: translateY(-50%) scale(1.02);
+        }
+
+        .generate-btn:disabled {
+            background: #999;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            color: #666;
+            margin-top: 2rem;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 3px solid rgba(0, 0, 0, 0.1);
+            border-top: 3px solid #1a1a1a;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .split-view {
+            flex: 1;
+            display: none;
+            opacity: 0;
+        }
+
+        .split-view.active {
+            display: flex;
+            animation: fadeIn 0.6s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        .panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: white;
+            margin: 1rem;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .panel-header {
+            padding: 1rem 1.5rem;
+            background: #f8f8f8;
+            color: #1a1a1a;
+            font-weight: 500;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .panel-tools {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .tool-btn {
+            background: white;
+            border: 1px solid #d0d0d0;
+            color: #1a1a1a;
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+        }
+
+        .tool-btn:hover {
+            background: #f0f0f0;
+            border-color: #b0b0b0;
+        }
+
+        .panel-content {
+            flex: 1;
+            overflow: auto;
+        }
+
+        .code-editor {
+            width: 100%;
+            height: 100%;
+            padding: 1.5rem;
+            font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+            border: none;
+            outline: none;
+            resize: none;
+            background: #f8f8f8;
+            color: #1a1a1a;
+        }
+
+        .preview-frame {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: white;
+        }
+
+        .file-tabs {
+            display: flex;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: #f8f8f8;
+            border-bottom: 1px solid #e0e0e0;
+            overflow-x: auto;
+        }
+
+        .file-tab {
+            padding: 0.5rem 1rem;
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+        }
+
+        .file-tab:hover {
+            background: #f0f0f0;
+        }
+
+        .file-tab.active {
+            background: #1a1a1a;
+            color: white;
+            border-color: #1a1a1a;
+        }
+
+        .status-bar {
+            padding: 0.5rem 1rem;
+            background: #f8f8f8;
+            border-top: 1px solid #e0e0e0;
+            font-size: 0.8rem;
+            color: #666;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .error-message {
+            background: #f8f8f8;
+            border: 1px solid #e0e0e0;
+            color: #c00;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 6px;
+            display: none;
+            white-space: pre-wrap;
+            font-size: 0.9rem;
+        }
+
+        .error-message.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="prompt-section" id="promptSection">
+            <div class="prompt-wrapper">
+                <h1>AI Web App Generator</h1>
+                <p class="subtitle">Describe your app and watch it come to life</p>
+                
+                <div class="input-container">
+                    <input 
+                        type="text" 
+                        class="prompt-input" 
+                        id="promptInput"
+                        placeholder="e.g., Build a colorful modern todo app"
+                    >
+                    <button class="generate-btn" id="generateBtn">Generate</button>
+                </div>
+
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p>Generating your app...</p>
+                </div>
+
+                <div class="error-message" id="errorMessage"></div>
+            </div>
+        </div>
+
+        <div class="split-view" id="splitView">
+            <div class="panel">
+                <div class="panel-header">
+                    <span>Code Editor</span>
+                    <div class="panel-tools">
+                        <button class="tool-btn" id="copyBtn">Copy</button>
+                        <button class="tool-btn" id="downloadBtn">Download</button>
+                    </div>
+                </div>
+                <div class="file-tabs" id="fileTabs"></div>
+                <div class="panel-content">
+                    <textarea class="code-editor" id="codeEditor" spellcheck="false"></textarea>
+                </div>
+                <div class="status-bar">
+                    <span id="fileInfo">No file selected</span>
+                    <span id="lineInfo">Lines: 0</span>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-header">
+                    <span>Live Preview</span>
+                    <div class="panel-tools">
+                        <button class="tool-btn" id="refreshBtn">Refresh</button>
+                    </div>
+                </div>
+                <div class="panel-content">
+                    <iframe class="preview-frame" id="previewFrame"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const state = { files: {}, currentFile: null };
+        
+        const promptSection = document.getElementById('promptSection');
+        const promptInput = document.getElementById('promptInput');
+        const generateBtn = document.getElementById('generateBtn');
+        const loading = document.getElementById('loading');
+        const splitView = document.getElementById('splitView');
+        const codeEditor = document.getElementById('codeEditor');
+        const previewFrame = document.getElementById('previewFrame');
+        const fileTabs = document.getElementById('fileTabs');
+        const fileInfo = document.getElementById('fileInfo');
+        const lineInfo = document.getElementById('lineInfo');
+        const errorMessage = document.getElementById('errorMessage');
+
+        // Event listeners
+        generateBtn.addEventListener('click', handleGenerate);
+        promptInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') handleGenerate();
+        });
+        codeEditor.addEventListener('input', handleCodeChange);
+        document.getElementById('copyBtn').addEventListener('click', copyCode);
+        document.getElementById('downloadBtn').addEventListener('click', downloadCode);
+        document.getElementById('refreshBtn').addEventListener('click', updatePreview);
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.classList.add('active');
+            setTimeout(() => {
+                errorMessage.classList.remove('active');
+            }, 8000);
+        }
+
+        async function handleGenerate() {
+            const prompt = promptInput.value.trim();
+            if (!prompt) {
+                showError('Please enter a prompt');
+                return;
+            }
+
+            generateBtn.disabled = true;
+            loading.classList.add('active');
+            errorMessage.classList.remove('active');
+
+            try {
+                console.log('Sending request to backend...');
+                const response = await fetch('http://localhost:8000/api/generate', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ user_prompt: prompt })
+                });
+
+                console.log('Response status:', response.status);
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error('Backend error (' + response.status + '): ' + errorText);
+                }
+
+                const data = await response.json();
+                console.log('Received data:', data);
+                
+                if (data.files && Object.keys(data.files).length > 0) {
+                    state.files = data.files;
+                    renderFileTabs();
+                    const firstFile = Object.keys(state.files)[0];
+                    selectFile(firstFile);
+                    
+                    loading.classList.remove('active');
+                    promptSection.classList.add('minimized');
+                    splitView.classList.add('active');
+                } else {
+                    showError('No files were generated. Please try again with a different prompt.');
+                }
+            } catch (error) {
+                console.error('Generation error:', error);
+                showError(error.message + '\n\nMake sure the backend is running on http://localhost:8000');
+            } finally {
+                loading.classList.remove('active');
+                generateBtn.disabled = false;
+            }
+        }
+
+        function renderFileTabs() {
+            fileTabs.innerHTML = '';
+            Object.keys(state.files).forEach(filename => {
+                const tab = document.createElement('div');
+                tab.className = 'file-tab';
+                tab.textContent = filename;
+                tab.addEventListener('click', () => selectFile(filename));
+                fileTabs.appendChild(tab);
+            });
+        }
+
+        function selectFile(filename) {
+            state.currentFile = filename;
+            codeEditor.value = state.files[filename] || '';
+            
+            document.querySelectorAll('.file-tab').forEach(tab => {
+                tab.classList.toggle('active', tab.textContent === filename);
+            });
+
+            updateFileInfo();
+            updatePreview();
+        }
+
+        function handleCodeChange() {
+            if (state.currentFile) {
+                state.files[state.currentFile] = codeEditor.value;
+                updateFileInfo();
+                updatePreview();
+            }
+        }
+
+        function updateFileInfo() {
+            if (state.currentFile) {
+                const lines = codeEditor.value.split('\n').length;
+                fileInfo.textContent = state.currentFile;
+                lineInfo.textContent = 'Lines: ' + lines;
+            }
+        }
+
+        function updatePreview() {
+            const htmlFile = Object.keys(state.files).find(f => f.endsWith('.html'));
+            if (!htmlFile) return;
+
+            let html = state.files[htmlFile];
+            const cssFile = Object.keys(state.files).find(f => f.endsWith('.css'));
+            const jsFile = Object.keys(state.files).find(f => f.endsWith('.js'));
+
+            if (cssFile && state.files[cssFile]) {
+                html = html.replace('</head>', '<style>' + state.files[cssFile] + '</style></head>');
+            }
+            if (jsFile && state.files[jsFile]) {
+                html = html.replace('</body>', '<script>' + state.files[jsFile] + '<\/script></body>');
+            }
+
+            const blob = new Blob([html], { type: 'text/html' });
+            previewFrame.src = URL.createObjectURL(blob);
+        }
+
+        function copyCode() {
+            if (!state.currentFile) {
+                showError('No file selected');
+                return;
+            }
+            navigator.clipboard.writeText(codeEditor.value).then(() => {
+                const btn = document.getElementById('copyBtn');
+                const originalText = btn.textContent;
+                btn.textContent = 'Copied!';
+                setTimeout(() => btn.textContent = originalText, 2000);
+            }).catch(() => {
+                codeEditor.select();
+                document.execCommand('copy');
+                alert('Code copied!');
+            });
+        }
+
+        function downloadCode() {
+            if (!state.currentFile) {
+                showError('No file selected');
+                return;
+            }
+            const blob = new Blob([codeEditor.value], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = state.currentFile;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        console.log('Frontend loaded successfully');
+        console.log('Backend API: http://localhost:8000');
+        console.log('Ready to generate apps!');
+    </script>
+</body>
+</html>
