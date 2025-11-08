@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Web App Generator</title>
+    <title>curiosity</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
     <style>
         * {
@@ -13,11 +13,11 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #000;
+            color: #fff;
             min-height: 100vh;
             overflow: hidden;
-            color: #1a1a1a;
         }
 
         .container {
@@ -34,14 +34,13 @@
             justify-content: center;
             padding: 2rem;
             transition: all 0.6s ease;
-            border-bottom: 1px solid #e0e0e0;
         }
 
         .prompt-section.minimized {
-            flex: 0 0 70px;
+            flex: 0 0 80px;
             padding: 1rem 2rem;
-            background: #f8f8f8;
-            border-bottom: 1px solid #d0d0d0;
+            background: #111;
+            border-bottom: 1px solid #333;
         }
 
         .prompt-wrapper {
@@ -57,24 +56,22 @@
         }
 
         h1 {
-            color: #1a1a1a;
-            font-size: 2.5rem;
+            color: white;
+            font-size: 3rem;
             margin-bottom: 1rem;
             text-align: center;
             font-weight: 300;
-            letter-spacing: -0.5px;
         }
 
         .prompt-section.minimized h1 {
-            font-size: 1.3rem;
+            font-size: 1.5rem;
             margin-bottom: 0;
             text-align: left;
-            font-weight: 400;
         }
 
         .subtitle {
-            color: #666;
-            font-size: 1.1rem;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1.2rem;
             text-align: center;
             margin-bottom: 3rem;
             font-weight: 300;
@@ -95,56 +92,150 @@
 
         .prompt-input {
             width: 100%;
-            padding: 1.3rem 5rem 1.3rem 1.5rem;
+            padding: 1.5rem 5rem 1.5rem 1.5rem;
             font-size: 1.1rem;
-            border: 1px solid #d0d0d0;
-            border-radius: 8px;
-            background: white;
+            border: 1px solid #333;
+            border-radius: 4px;
+            background: #111;
+            color: white;
             outline: none;
-            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            transition: border-color 0.2s;
         }
 
         .prompt-input:focus {
-            border-color: #1a1a1a;
-            box-shadow: 0 0 0 2px rgba(26, 26, 26, 0.1);
+            border-color: #666;
         }
 
         .prompt-section.minimized .prompt-input {
-            padding: 0.7rem 4rem 0.7rem 1.2rem;
+            padding: 0.8rem 4rem 0.8rem 1.2rem;
             font-size: 1rem;
-            border-radius: 6px;
         }
 
         .generate-btn {
             position: absolute;
-            right: 6px;
+            right: 8px;
             top: 50%;
             transform: translateY(-50%);
-            padding: 0.7rem 1.8rem;
-            background: #1a1a1a;
-            color: white;
+            padding: 0.8rem 2rem;
+            background: #fff;
+            color: #000;
             border: none;
-            border-radius: 6px;
-            font-size: 0.95rem;
+            border-radius: 4px;
+            font-size: 1rem;
             font-weight: 500;
             cursor: pointer;
-            transition: background 0.2s ease, transform 0.2s ease;
+            transition: background 0.2s ease;
         }
 
         .generate-btn:hover:not(:disabled) {
-            background: #333;
-            transform: translateY(-50%) scale(1.02);
+            background: #ddd;
         }
 
         .generate-btn:disabled {
-            background: #999;
+            opacity: 0.5;
             cursor: not-allowed;
+        }
+
+        .terminal-section {
+            display: none;
+            background: #111;
+            margin: 1rem 2rem;
+            padding: 1.5rem;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #333;
+        }
+
+        .terminal-section.active {
+            display: block;
+        }
+
+        .terminal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #333;
+        }
+
+        .terminal-title {
+            color: #fff;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .terminal-controls {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .terminal-btn {
+            background: #333;
+            border: none;
+            color: #fff;
+            padding: 0.3rem 0.8rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .terminal-btn:hover {
+            background: #444;
+        }
+
+        .terminal-output {
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            color: #d4d4d4;
+        }
+
+        .terminal-line {
+            margin: 2px 0;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .terminal-line.info {
+            color: #ffffff;
+        }
+
+        .terminal-line.success {
+            color: #ffffff;
+        }
+
+        .terminal-line.warning {
+            color: #ffffff;
+        }
+
+        .terminal-line.error {
+            color: #ffffff;
+        }
+
+        .connection-status {
+            display: inline-block;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .connection-status.connected {
+            background: #000000;
+            color: white;
+        }
+
+        .connection-status.disconnected {
+            background: #000000;
+            color: white;
         }
 
         .loading {
             display: none;
             text-align: center;
-            color: #666;
+            color: white;
             margin-top: 2rem;
         }
 
@@ -153,11 +244,11 @@
         }
 
         .spinner {
-            border: 3px solid rgba(0, 0, 0, 0.1);
-            border-top: 3px solid #1a1a1a;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid white;
             border-radius: 50%;
-            width: 36px;
-            height: 36px;
+            width: 40px;
+            height: 40px;
             animation: spin 1s linear infinite;
             margin: 0 auto 1rem;
         }
@@ -186,23 +277,21 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            background: white;
+            background: #111;
             margin: 1rem;
-            border-radius: 8px;
-            border: 1px solid #e0e0e0;
+            border: 1px solid #333;
             overflow: hidden;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
         }
 
         .panel-header {
             padding: 1rem 1.5rem;
-            background: #f8f8f8;
-            color: #1a1a1a;
+            background: #111;
+            color: white;
             font-weight: 500;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid #e0e0e0;
+            border-bottom: 1px solid #333;
         }
 
         .panel-tools {
@@ -211,19 +300,18 @@
         }
 
         .tool-btn {
-            background: white;
-            border: 1px solid #d0d0d0;
-            color: #1a1a1a;
+            background: #333;
+            border: none;
+            color: white;
             padding: 0.4rem 0.8rem;
             border-radius: 4px;
             cursor: pointer;
-            font-size: 0.85rem;
-            transition: all 0.2s ease;
+            font-size: 0.9rem;
+            transition: background 0.2s ease;
         }
 
         .tool-btn:hover {
-            background: #f0f0f0;
-            border-color: #b0b0b0;
+            background: #444;
         }
 
         .panel-content {
@@ -235,14 +323,14 @@
             width: 100%;
             height: 100%;
             padding: 1.5rem;
-            font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
-            font-size: 13px;
-            line-height: 1.5;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
             border: none;
             outline: none;
             resize: none;
-            background: #f8f8f8;
-            color: #1a1a1a;
+            background: #000;
+            color: #d4d4d4;
         }
 
         .preview-frame {
@@ -256,49 +344,48 @@
             display: flex;
             gap: 0.5rem;
             padding: 0.5rem 1rem;
-            background: #f8f8f8;
-            border-bottom: 1px solid #e0e0e0;
+            background: #111;
+            border-bottom: 1px solid #333;
             overflow-x: auto;
         }
 
         .file-tab {
             padding: 0.5rem 1rem;
-            background: white;
-            border: 1px solid #e0e0e0;
-            border-radius: 4px;
+            background: #222;
+            border: 1px solid #333;
+            color: white;
             cursor: pointer;
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             white-space: nowrap;
-            transition: all 0.2s ease;
+            transition: background 0.2s ease;
         }
 
         .file-tab:hover {
-            background: #f0f0f0;
+            background: #333;
         }
 
         .file-tab.active {
-            background: #1a1a1a;
-            color: white;
-            border-color: #1a1a1a;
+            background: white;
+            color: #000;
+            border-color: white;
         }
 
         .status-bar {
             padding: 0.5rem 1rem;
-            background: #f8f8f8;
-            border-top: 1px solid #e0e0e0;
-            font-size: 0.8rem;
-            color: #666;
+            background: #111;
+            border-top: 1px solid #333;
+            font-size: 0.85rem;
+            color: #aaa;
             display: flex;
             justify-content: space-between;
         }
 
         .error-message {
-            background: #f8f8f8;
-            border: 1px solid #e0e0e0;
-            color: #c00;
+            background: #300;
+            border: 1px solid #500;
+            color: #f55;
             padding: 1rem;
             margin: 1rem 0;
-            border-radius: 6px;
             display: none;
             white-space: pre-wrap;
             font-size: 0.9rem;
@@ -313,7 +400,7 @@
     <div class="container">
         <div class="prompt-section" id="promptSection">
             <div class="prompt-wrapper">
-                <h1>AI Web App Generator</h1>
+                <h1>CURIOSITY</h1>
                 <p class="subtitle">Describe your app and watch it come to life</p>
                 
                 <div class="input-container">
@@ -333,6 +420,20 @@
 
                 <div class="error-message" id="errorMessage"></div>
             </div>
+        </div>
+
+        <div class="terminal-section" id="terminalSection">
+            <div class="terminal-header">
+                <div class="terminal-title">
+                    🖥️ Terminal Output
+                    <span class="connection-status disconnected" id="connectionStatus">Disconnected</span>
+                </div>
+                <div class="terminal-controls">
+                    <button class="terminal-btn" id="clearTerminalBtn">Clear</button>
+                    <button class="terminal-btn" id="toggleTerminalBtn">Hide</button>
+                </div>
+            </div>
+            <div class="terminal-output" id="terminalOutput"></div>
         </div>
 
         <div class="split-view" id="splitView">
@@ -369,7 +470,12 @@
     </div>
 
     <script>
-        const state = { files: {}, currentFile: null };
+        const state = { 
+            files: {}, 
+            currentFile: null,
+            ws: null,
+            isGenerating: false
+        };
         
         const promptSection = document.getElementById('promptSection');
         const promptInput = document.getElementById('promptInput');
@@ -382,6 +488,76 @@
         const fileInfo = document.getElementById('fileInfo');
         const lineInfo = document.getElementById('lineInfo');
         const errorMessage = document.getElementById('errorMessage');
+        const terminalSection = document.getElementById('terminalSection');
+        const terminalOutput = document.getElementById('terminalOutput');
+        const connectionStatus = document.getElementById('connectionStatus');
+        const clearTerminalBtn = document.getElementById('clearTerminalBtn');
+        const toggleTerminalBtn = document.getElementById('toggleTerminalBtn');
+
+        // WebSocket connection
+        function connectWebSocket() {
+            console.log('🔌 Connecting to WebSocket...');
+            state.ws = new WebSocket('ws://localhost:8000/ws');
+            
+            state.ws.onopen = () => {
+                console.log(' WebSocket connected');
+                connectionStatus.textContent = 'Connected';
+                connectionStatus.className = 'connection-status connected';
+                addTerminalLine(' Connected to backend server', 'success');
+            };
+            
+            state.ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                
+                if (data.type === 'connection') {
+                    addTerminalLine(data.message, 'info');
+                } else if (data.type === 'log') {
+                    addTerminalLine(data.message, 'log');
+                } else if (data.type === 'info') {
+                    addTerminalLine(data.message, 'info');
+                } else if (data.type === 'success') {
+                    addTerminalLine(data.message, 'success');
+                } else if (data.type === 'warning') {
+                    addTerminalLine(data.message, 'warning');
+                } else if (data.type === 'error') {
+                    addTerminalLine(data.message, 'error');
+                }
+            };
+            
+            state.ws.onerror = (error) => {
+                console.error('❌ WebSocket error:', error);
+                connectionStatus.textContent = 'Error';
+                connectionStatus.className = 'connection-status disconnected';
+            };
+            
+            state.ws.onclose = () => {
+                console.log('🔌 WebSocket disconnected');
+                connectionStatus.textContent = 'Disconnected';
+                connectionStatus.className = 'connection-status disconnected';
+                
+                // Reconnect after 3 seconds if not generating
+                if (!state.isGenerating) {
+                    setTimeout(connectWebSocket, 3000);
+                }
+            };
+        }
+
+        function addTerminalLine(text, type = 'log') {
+            const line = document.createElement('div');
+            line.className = `terminal-line ${type}`;
+            line.textContent = text;
+            terminalOutput.appendChild(line);
+            terminalOutput.scrollTop = terminalOutput.scrollHeight;
+        }
+
+        function clearTerminal() {
+            terminalOutput.innerHTML = '';
+        }
+
+        function toggleTerminal() {
+            terminalSection.classList.toggle('active');
+            toggleTerminalBtn.textContent = terminalSection.classList.contains('active') ? 'Hide' : 'Show';
+        }
 
         // Event listeners
         generateBtn.addEventListener('click', handleGenerate);
@@ -392,6 +568,8 @@
         document.getElementById('copyBtn').addEventListener('click', copyCode);
         document.getElementById('downloadBtn').addEventListener('click', downloadCode);
         document.getElementById('refreshBtn').addEventListener('click', updatePreview);
+        clearTerminalBtn.addEventListener('click', clearTerminal);
+        toggleTerminalBtn.addEventListener('click', toggleTerminal);
 
         function showError(message) {
             errorMessage.textContent = message;
@@ -408,9 +586,15 @@
                 return;
             }
 
+            state.isGenerating = true;
             generateBtn.disabled = true;
             loading.classList.add('active');
             errorMessage.classList.remove('active');
+            
+            // Show terminal
+            terminalSection.classList.add('active');
+            clearTerminal();
+            addTerminalLine(' Starting generation process...', 'info');
 
             try {
                 console.log('Sending request to backend...');
@@ -442,15 +626,20 @@
                     loading.classList.remove('active');
                     promptSection.classList.add('minimized');
                     splitView.classList.add('active');
+                    
+                    addTerminalLine(' Files loaded in editor!', 'success');
                 } else {
                     showError('No files were generated. Please try again with a different prompt.');
+                    addTerminalLine('  No files were generated', 'warning');
                 }
             } catch (error) {
                 console.error('Generation error:', error);
                 showError(error.message + '\n\nMake sure the backend is running on http://localhost:8000');
+                addTerminalLine('❌ ' + error.message, 'error');
             } finally {
                 loading.classList.remove('active');
                 generateBtn.disabled = false;
+                state.isGenerating = false;
             }
         }
 
@@ -545,9 +734,13 @@
             URL.revokeObjectURL(url);
         }
 
-        console.log('Frontend loaded successfully');
-        console.log('Backend API: http://localhost:8000');
-        console.log('Ready to generate apps!');
+        // Initialize
+        console.log(' Frontend loaded successfully');
+        console.log(' Backend API: http://localhost:8000');
+        console.log(' Ready to generate apps!');
+        
+        // Connect WebSocket
+        connectWebSocket();
     </script>
 </body>
 </html>
