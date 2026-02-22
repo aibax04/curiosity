@@ -25,7 +25,7 @@ except ImportError as e:
     print(f"Using fallback PROJECT_ROOT: {PROJECT_ROOT}")
     
     def init_project_root():
-        PROJECT_ROOT.mkdir(parents=True, exist_ok=True)
+        await asyncio.to_thread(PROJECT_ROOT.mkdir, parents=True, exist_ok=True)
         return str(PROJECT_ROOT)
 
 app = FastAPI(title="Coder Buddy API", version="0.1.0")
@@ -203,7 +203,7 @@ async def generate_app(request: GenerateRequest):
             await broadcast_log("Cleaning up existing directory...", "info")
             await asyncio.to_thread(shutil.rmtree, PROJECT_ROOT)
         
-        PROJECT_ROOT.mkdir(parents=True, exist_ok=True)
+        await asyncio.to_thread(PROJECT_ROOT.mkdir, parents=True, exist_ok=True)
         print(f"Created fresh directory: {PROJECT_ROOT}")
         await broadcast_log("Created fresh directory", "success")
         
