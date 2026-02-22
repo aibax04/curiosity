@@ -201,7 +201,7 @@ async def generate_app(request: GenerateRequest):
         if PROJECT_ROOT.exists():
             print("Cleaning up existing directory...")
             await broadcast_log("Cleaning up existing directory...", "info")
-            shutil.rmtree(PROJECT_ROOT)
+            await asyncio.to_thread(shutil.rmtree, PROJECT_ROOT)
         
         PROJECT_ROOT.mkdir(parents=True, exist_ok=True)
         print(f"Created fresh directory: {PROJECT_ROOT}")
@@ -295,7 +295,7 @@ async def clear_generated_files():
     """Clear all generated files"""
     try:
         if PROJECT_ROOT.exists():
-            shutil.rmtree(PROJECT_ROOT)
+            await asyncio.to_thread(shutil.rmtree, PROJECT_ROOT)
             return {"status": "success", "message": "Cleared generated files"}
         return {"status": "success", "message": "No files to clear"}
     except Exception as e:
