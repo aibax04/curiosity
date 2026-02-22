@@ -19,11 +19,12 @@ def setup_frontend():
             # Run create_frontend.py to generate the HTML
             subprocess.run([sys.executable, "create_frontend.py"], check=True)
             
-            # If it created frontend.html, move it to frontend/index.html
-            frontend_html = Path(__file__).parent / "frontend.html"
-            if frontend_html.exists():
-                frontend_html.rename(index_path)
+            # create_frontend.py already writes to frontend/index.html
+            if index_path.exists():
                 print("✅ Created frontend/index.html")
+            else:
+                print(f"❌ Expected frontend/index.html not found after running create_frontend.py")
+                return False
         except Exception as e:
             print(f"❌ Error creating frontend: {e}")
             print("Please run create_frontend.py manually first")
